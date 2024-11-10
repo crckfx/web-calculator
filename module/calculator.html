@@ -1,0 +1,48 @@
+<link rel="stylesheet" href="/snackbox/pages/calculator/calculator.css" />
+
+<div id="calculator">
+    <div id="outputArea"></div>
+    <div id="inputArea">
+        <span id="inputZone" contenteditable="true" inputmode='none'></span>
+        <span class="placeholder"></span>
+    </div>
+    <div class="buttons">
+        <div class="digits">
+            <button class="digit button" id="d_1" value="1">1</button>
+            <button class="digit button" id="d_2" value="2">2</button>
+            <button class="digit button" id="d_3" value="3">3</button>
+            <button class="digit button" id="d_4" value="4">4</button>
+            <button class="digit button" id="d_5" value="5">5</button>
+            <button class="digit button" id="d_6" value="6">6</button>
+            <button class="digit button" id="d_7" value="7">7</button>
+            <button class="digit button" id="d_8" value="8">8</button>
+            <button class="digit button" id="d_9" value="9">9</button>
+            <button class="digit button" id="d_0" value="0">0</button>
+            <button class="operand button" id="decimal" value=".">.</button>
+            <button class="control button" id="ANS" value="ANS">ANS</button>
+        </div>
+        
+        <div class="brackets">
+            <button class="operand button" id="leftBracket" value=(>(</button>
+            <button class="operand button" id="rightBracket" value=)>)</button>
+            
+
+            <button class="control button" id="arrowLeft" value="ARROWLEFT">←</button>
+            <button class="control button" id="arrowRight" value="ARROWRIGHT">→</button>
+        </div>
+
+        <div class="operands">
+            <button class="control button" id="delete" value="DELETE">DEL</button>
+            <button class="control button" id="clear" value="CLEAR">AC</button>
+            <button class="operand button" id="multiply" value="*">*</button>
+            <button class="operand button" id="divide" value="/">/</button>
+            <button class="operand button" id="add" value="+">+</button>
+            <button class="operand button" id="subtract" value="-">-</button>
+            <button class="control button" id="enter" value="=">=</button>
+        </div>
+    </div>
+
+</div>
+<script type="module" src="/snackbox/pages/calculator/main.js"></script>
+<script type="module" src="/snackbox/pages/calculator/tester.js"></script>
+<!-- <script src="./parser_old.js"></script> -->
