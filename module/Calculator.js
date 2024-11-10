@@ -1,4 +1,4 @@
-// import { Parser } from "./Parser.js"
+import { Parser } from "./Parser.js"
 
 // calculator.js
 export class Calculator {
