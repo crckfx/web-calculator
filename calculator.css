@@ -79,10 +79,10 @@
 } */
 
 #calculator #outputArea {
+    color: #d0d0d0;
     border: 4px solid transparent;
     border-radius: 4px;
     font-size: 2.5rem;
-    color: white;
     background-color: #444;
     height: 80px;
     margin-bottom: 10px;
@@ -94,10 +94,11 @@
     -webkit-box-orient: vertical;
     overflow: hidden;
     text-overflow: ellipsis;
-
 }
 
-
+#calculator #outputArea.soft{
+    color: #d0d0d040;
+}
 
 #calculator #inputArea {
     border: 4px solid transparent;

@@ -164,15 +164,21 @@ export class Calculator {
             const answer = this.parser.parse(this.inputString); // use parser
             this.outputArea.innerHTML = `${answer}`;
             if (typeof answer === "number") {
+                this.outputArea.classList.remove('soft');
                 this.lastAnswer = answer; // set it into the class property
-            }
+            } 
         }
     }
 
     softSubmit() {
         const answer = this.parser.parse(this.inputString); // use parser
         if (typeof answer === "number") {
+            this.outputArea.classList.add('soft');
             this.outputArea.innerHTML = `${answer}`;
+        } else {
+            if (!this.outputArea.classList.contains('soft')) {
+                this.outputArea.classList.add('soft');
+            };
         }
     }
 

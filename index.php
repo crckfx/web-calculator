@@ -8,7 +8,7 @@ require_once(PRIVATE_URL . 'process_module_queries.php'); // we now use function
 if (processModuleQueries('calculator') < 1) {
     // reach here IF no query parameters found. otherwise, processModuleQueries() will handle the rest.
     echo "<div class='main-content'>";
-    include ('module/calculator_mobile.html');
+    include (__DIR__ . '/module/calculator_mobile.html');
     echo "</div>";
 } 
 
