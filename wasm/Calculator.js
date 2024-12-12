@@ -1,4 +1,4 @@
-import ParserModule from './parser2.js';
+import ParserModule from './build/parser2.js';
 
 // calculator.js
 export class Calculator {

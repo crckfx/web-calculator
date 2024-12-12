@@ -41,8 +41,8 @@ export function initKeyboard(calculator) {
 
         // Check if the key is in our mapping
         if (key in keyMap) {
-            // override default browser behavior for the key
-            event.preventDefault();
+            // // override default browser behavior for the key
+            // event.preventDefault();
             // Handle the key accordingly
             handleKeyInput(keyMap[key]);
         }
