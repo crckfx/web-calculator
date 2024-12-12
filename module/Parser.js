@@ -1,3 +1,4 @@
+// string parser for calculator
 export class Parser {
     constructor() {
         this.tokens = [];

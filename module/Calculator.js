@@ -12,8 +12,11 @@ export class Calculator {
 
         // Calculator state
         this.inputString = "";
-        this.lastAnswer = null;
         this.cursorPosition = 0;
+
+        this.maxHistoryCount = 5;
+        this.history = [];      // add history member var
+        this.historyIndex = 0;
 
         // Bind UI elements to events
         this.initialize();
@@ -68,15 +71,6 @@ export class Calculator {
         this.enterInputChar(value);
     }
 
-    // enterInputChar(char) {
-    //     console.log(`INPUT: '${char}'`);
-    //     this.inputString += char;
-    //     // Move the cursor position forward
-    //     this.cursorPosition++;
-
-    //     this.updateInputDisplay();
-    // }
-
     enterInputChar(char) {
         console.log(`INPUT: '${char}'`);
 
@@ -95,7 +89,6 @@ export class Calculator {
 
     enterInputString(string) {
         console.log(`INPUT STRING: '${string}'`);
-
         // Insert the character at the cursor position
         this.inputString =
             this.inputString.slice(0, this.cursorPosition) +
@@ -112,12 +105,16 @@ export class Calculator {
 
 
     inputLastAnswer() {
-        if (typeof this.lastAnswer === "number") {
+        // use the history array, instead of a "lastAnswer" variable
+        const lastIndex = (this.historyIndex - 1 + this.maxHistoryCount) % this.maxHistoryCount; // 
+        const h = this.history[lastIndex]; // this nearly works but crashes at index 0
+        if (h && typeof h.answer === "number") {
             // guaranteed to be a number here. cast to string so it can be concatenated properly
-            this.enterInputString(this.lastAnswer.toString());
+            this.enterInputString(h.answer.toString());
         }
     }
 
+    // function to clear the input and the output
     AllClear() {
         this.clearInput();
         this.clearOutput();
@@ -131,11 +128,6 @@ export class Calculator {
     clearOutput() {
         this.outputArea.innerHTML = "";
     }
-
-    // doBackspace() {
-    //     this.inputString = this.inputString.slice(0, -1);
-    //     this.updateInputDisplay();
-    // }
 
     doBackspace() {
         if (this.cursorPosition > 0) {
@@ -159,14 +151,17 @@ export class Calculator {
 
     submit() {
         if (this.inputString !== "") {
-            // const str = this.inputString;
-            // this.clearInput(); // flush the input string
+
             const answer = this.parser.parse(this.inputString); // use parser
             this.outputArea.innerHTML = `${answer}`;
+
             if (typeof answer === "number") {
+                // add a valid answer to history
+                this.addToHistory(this.inputString, answer);
+                this.printHistory();
+
                 this.outputArea.classList.remove('soft');
-                this.lastAnswer = answer; // set it into the class property
-            } 
+            }
         }
     }
 
@@ -214,6 +209,7 @@ export class Calculator {
                     button.addEventListener('click', () => this.submit());
                     break;
                 case 'ANS':
+                    // button.addEventListener('click', () => this.inputLastAnswer());
                     button.addEventListener('click', () => this.inputLastAnswer());
                     break;
                 case 'ARROWLEFT':
@@ -230,7 +226,8 @@ export class Calculator {
         }
     }
 
-
+    // ******************************************************************
+    // *** CURSOR **********************
 
     setCursorPosition(position) {
         const range = document.createRange();
@@ -290,8 +287,44 @@ export class Calculator {
             }
         }
     }
+    // ******************************************************************
 
+    // ******************************************************************
+    // *** HISTORY **********************    
 
+    addToHistory(inputString, answer) {
+        if (this.history.length < this.maxHistoryCount) {
+            this.history.push({ str: inputString, answer: answer });
+        } else {
+            // Overwrite oldest entry when full
+            this.history[this.historyIndex] = { str: inputString, answer: answer };
+        }
+        // Update current index to the next position (circular behavior)
+        this.historyIndex = (this.historyIndex + 1) % this.maxHistoryCount;
+    }
 
+    printHistory() {
+        // set a variable for the string
+        let historyString = "historyString: ";
+        let length = this.history.length;
+
+        // Start from the most recent and iterate backwards
+        for (let i = 0; i < length; i++) {
+            // Compute the current index manually
+            const index = (this.historyIndex - 1 - i + this.maxHistoryCount) % this.maxHistoryCount;
+            const hi = this.history[index];
+            historyString += `\n${hi.str} = ${hi.answer},`;
+        }
+
+        // for (let i = this.history.length - 1; i > -1; i--) {
+        //     const hi = this.history[i];
+        //     historyString += `\n${hi.str}:  `;
+        //     historyString += `${hi.answer},`;
+
+        // }
+
+        console.log(historyString);
+    }
+    // ******************************************************************
 }
 
