@@ -385,6 +385,15 @@ export class Calculator {
 
             console.log("WASM Parser resources cleaned up");
         }
-    }    
+    } 
+    
+    testInput(expression, answer) {
+        return {
+            expression: expression,
+            answer: answer,
+            result: this.parseExpression(expression)
+        }
+    }
+        
 }
 
