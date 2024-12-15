@@ -1,6 +1,6 @@
 // ----------------------------------------------------------------
-// Tests for the parser
-// import { calculator } from "./main.js";
+// Tests for the parser that accept a calculator
+
 
 function getMathsTests(calculator) {
 
@@ -40,12 +40,10 @@ export function runMathsTests(calculator) {
             // console.log(`successful test: "${test.expression}" = "${test.result}"`);
         } else {
             if (Number.isNaN(test.answer)) {
-                console.log("successful test actually");
+                // console.log("successful test actually");
+                continue
             } else {
-
                 console.warn(`failed test: "${test.expression}" with answer "${test.answer}" and result "${test.result}"`);
-                // console.log(test.answer);
-                // console.log(test.result);
                 failed = true;
                 break;
             }
