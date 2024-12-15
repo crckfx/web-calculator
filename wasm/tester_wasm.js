@@ -2,26 +2,32 @@
 // Tests for the parser
 import { calculator } from "./main.js";
 
-const mathsTests = [
-    testInput(   "0.5 + 0.5"     ,   1       ),     // test decimals
-    testInput(   ".5 + .5"       ,   1       ),
-    testInput(   "2 * .25"       ,   0.5     ),
-    testInput(   "10 / .5"       ,   20      ),    
-    testInput(   "10 / 0.5"      ,   20      ),    
-    testInput(   "+8 + -3"       ,   5       ),     // test operands    
-    testInput(   "5 + -3 * 2"    ,   -1      ),    
-    testInput(   "10 / -2"       ,   -5      ),    
-    testInput(   "10 + +3"       ,   13      ),    
-    testInput(   "-6 * -2"       ,   12      ),    
-    testInput(   "9 / -8"        ,   -1.125  ),    
-    testInput(   "6(9)"          ,   54      ),     // test implicit multiplication
-    testInput(   "(5+1)(27/3)"   ,   54      ),    
-    testInput(   "(9)6"          ,   54      ),   
-    testInput(   "6+"            ,   "ERROR" ),     // test expected errors
-    testInput(   "*6"            ,   "ERROR" ),    
-    testInput(   "5 + -"         ,   "ERROR" ),    
-    testInput(   "4 4"           ,   "ERROR" ),
-]
+function getMathsTests() {
+
+
+    const mathsTests = [
+        testInput("0.5 + 0.5", 1),     // test decimals
+        testInput(".5 + .5", 1),
+        testInput("2 * .25", 0.5),
+        testInput("10 / .5", 20),
+        testInput("10 / 0.5", 20),
+        testInput("+8 + -3", 5),     // test operands    
+        testInput("5 + -3 * 2", -1),
+        testInput("10 / -2", -5),
+        testInput("10 + +3", 13),
+        testInput("-6 * -2", 12),
+        testInput("9 / -8", -1.125),
+        testInput("6(9)", 54),     // test implicit multiplication
+        testInput("(5+1)(27/3)", 54),
+        testInput("(9)6", 54),
+        testInput("6+", "ERROR"),     // test expected errors
+        testInput("*6", "ERROR"),
+        testInput("5 + -", "ERROR"),
+        testInput("4 4", "ERROR"),
+    ];
+    return mathsTests;
+}
+
 
 function testInput(expression, answer) {
     return {
@@ -31,9 +37,12 @@ function testInput(expression, answer) {
     }
 }
 
-function runMathsTests(tests) {
+export function runMathsTests() {
+
+    const tests = getMathsTests();
+
     let failed = false;
-    for (let i=0; i<tests.length; i++) {
+    for (let i = 0; i < tests.length; i++) {
         const test = tests[i];
         if (test.result === test.answer) {
             continue;
@@ -51,4 +60,3 @@ function runMathsTests(tests) {
 }
 
 
-runMathsTests(mathsTests);
