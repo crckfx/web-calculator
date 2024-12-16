@@ -91,15 +91,16 @@ export class Calculator {
         const controls = this.calculator.querySelectorAll("button.control");
         this.bindControlButtons(controls);
 
-        // Prevent default typing behavior
-        this.inputZone.addEventListener('keydown', (event) => {
-            // this.handleKeyPress(event);
-            event.preventDefault();
-        });
+        // // Prevent default typing behavior
+        // this.inputZone.addEventListener('keydown', (event) => {
+        //     // this.handleKeyPress(event);
+        //     event.preventDefault();
+        // });
         // Update cursor position when user clicks or navigates
         this.inputZone.addEventListener('click', () => this.updateCursorPositionFromDOM());
-        this.inputZone.addEventListener('keyup', () => this.updateCursorPositionFromDOM());
-
+        // this.inputZone.addEventListener('keyup', () => this.updateCursorPositionFromDOM());
+        
+        this.inputZone.addEventListener('input', () => this.updateCursorPositionFromDOM());
         this.updateInputDisplay();
     }
 
