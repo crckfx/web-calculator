@@ -1,9 +1,7 @@
 // ----------------------------------------------------------------
 // Tests for the parser that accept a calculator
 
-
 function getMathsTests(calculator) {
-
 
     const mathsTests = [
         calculator.testInput("0.5 + 0.5", 1),     // test decimals
@@ -29,9 +27,7 @@ function getMathsTests(calculator) {
 }
 
 export function runMathsTests(calculator) {
-
     const tests = getMathsTests(calculator);
-
     let failed = false;
     for (let i = 0; i < tests.length; i++) {
         const test = tests[i];
@@ -40,17 +36,15 @@ export function runMathsTests(calculator) {
             // console.log(`successful test: "${test.expression}" = "${test.result}"`);
         } else {
             if (Number.isNaN(test.answer)) {
-                // console.log("successful test actually");
-                continue
+                continue;
             } else {
                 console.warn(`failed test: "${test.expression}" with answer "${test.answer}" and result "${test.result}"`);
                 failed = true;
                 break;
             }
-
         }
     }
-
+    // if not failed then print success
     if (!failed) {
         console.log("All maths tests succeeded.")
     }

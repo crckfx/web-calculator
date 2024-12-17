@@ -25,10 +25,7 @@ export class Calculator {
         this.maxHistoryCount = 5;
         this.history = [];      // add history member var
         this.historyIndex = 0;
-
     }
-
-
 
     parseExpression(expr) {
         if (!this.Parser || this.parserPtr === null) {
@@ -54,22 +51,17 @@ export class Calculator {
         }
     }
 
-
     async initializeParser() {
         try {
             this.Parser = await ParserModule();
-
             // Create parser instance
             this.parserPtr = this.Parser.ccall('create_parser', 'number');
-
             // Wrap parser parse function
             this.parser_parse = this.Parser.cwrap('parser_parse', 'number', ['number', 'number', 'number', 'number']);
-
             // Allocate memory
             this.inputPtr = this.Parser._malloc(this.MAX_INPUT_LEN);
             this.resultPtr = this.Parser._malloc(8);
             this.errorPtr = this.Parser._malloc(256);
-
             console.log("WASM Parser initialized successfully");
         } catch (error) {
             console.error("Failed to initialize WASM Parser:", error);
@@ -91,24 +83,13 @@ export class Calculator {
         const controls = this.calculator.querySelectorAll("button.control");
         this.bindControlButtons(controls);
 
-        // Update cursor position when user clicks or navigates
-        // this.inputArea.addEventListener('click', () => this.updateCursorPositionFromDOM());        
-        // this.inputArea.addEventListener('input', () => this.updateCursorPositionFromDOM());
         this.updateInputDisplay();
     }
 
     // --- UI functions ---
     updateInputDisplay() {
-        // if (this.inputArea.value === "") {
-        //     this.inputArea.innerHTML = '<span class="placeholder">\u200B</span>';
-        // } else {
-        //     this.inputArea.innerHTML = this.inputArea.value;
-        // }
-        // // this.inputArea.innerHTML = this.inputArea.value;
         this.inputArea.focus();
         this.softSubmit();
-        // Set the cursor position
-        // this.setCursorPosition(this.cursorPosition);
     }
 
     // misc function to do both/either string/char
@@ -132,8 +113,6 @@ export class Calculator {
         // Update the display
         this.updateInputDisplay();
     }
-
-
 
     inputLastAnswer() {
         // use the history array, instead of a "lastAnswer" variable
@@ -207,10 +186,8 @@ export class Calculator {
     bindCharButton(button) {
         const value = button.value;
         if (button.classList.contains("digit")) {
-            // console.log(`binding target: ${button.value} as a digit`);
             button.addEventListener('click', () => this.enterInput(value));
         } else if (button.classList.contains("operand")) {
-            // console.log(`binding target: ${button.value} as an operand`);
             button.addEventListener('click', () => this.enterInput(value));
         } else {
             console.error(`tried to bind button of unknown type: '${value}'`);
@@ -237,10 +214,10 @@ export class Calculator {
                     button.addEventListener('click', () => this.inputLastAnswer());
                     break;
                 case 'ARROWLEFT':
-                    button.addEventListener('click', () => this.moveCursorLeft());
+                    button.addEventListener('click', () => this.moveCursor(-1));
                     break;
                 case 'ARROWRIGHT':
-                    button.addEventListener('click', () => this.moveCursorRight());
+                    button.addEventListener('click', () => this.moveCursor(1));
                     break;
                 default:
                     console.log(`UNMANAGED CONTROL VALUE ${value}`);
@@ -262,45 +239,41 @@ export class Calculator {
         this.inputArea.focus();
         this.inputArea.setSelectionRange(position, position);
     }
-
+    
     moveCursorToStart() {
-        this.cursorPosition = 0;
+        // this.inputArea.focus();
+        this.inputArea.setSelectionRange(0, 0);
         this.updateInputDisplay();
     }
     moveCursorToEnd() {
-        this.cursorPosition = this.inputArea.value.length;
+        const endPos = this.inputArea.value.length;
+        // this.inputArea.focus();
+        this.inputArea.setSelectionRange(endPos, endPos);
         this.updateInputDisplay();
     }
 
-    moveCursorLeft() {
-        this.inputArea.focus();
-        if (this.inputArea.selectionStart > 0) {
-            const pos = this.inputArea.selectionStart - 1;
-            this.inputArea.setSelectionRange(pos, pos);
-            this.updateInputDisplay();
-        }
-    }
-    moveCursorRight() {
-        this.inputArea.focus();
-        if (this.inputArea.selectionStart < this.inputArea.value.length) {
-            const pos = this.inputArea.selectionStart + 1;
-            this.inputArea.setSelectionRange(pos, pos);
-            this.updateInputDisplay();
-        }
-    }
-
-    updateCursorPositionFromDOM() {
-        const selection = window.getSelection();
-        if (selection.rangeCount > 0) {
-            const range = selection.getRangeAt(0);
-
-            // Ensure the selection is within inputArea
-            if (this.inputArea.contains(range.startContainer)) {
-                // Update cursorPosition
-                this.cursorPosition = range.startOffset;
+    moveCursor(steps) {
+        const currentPos = this.inputArea.selectionStart;
+        const newPos = currentPos + steps;
+        console.log(`moveCursor: moving '${steps}' steps`);
+        
+        if (steps > 0) {
+            if (this.inputArea.selectionStart < this.inputArea.value.length) {
+                this.inputArea.setSelectionRange(newPos, newPos);
+                this.updateInputDisplay();
             }
         }
-    }
+        else if (steps < 0) {
+            if (this.inputArea.selectionStart > 0) {
+                this.inputArea.setSelectionRange(newPos, newPos);
+                this.updateInputDisplay();
+            }            
+        } else {
+            // nothing
+        }
+        this.inputArea.focus();
+    }    
+
     // ******************************************************************
     // 
     // ******************************************************************
