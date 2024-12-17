@@ -69,7 +69,6 @@
     function validateInput(event) {
         const inputDisplay = event.target;
         const value = inputDisplay.value;
-
         if (!allowedCharacters.test(value)) {
             inputDisplay.value = value.replace(/[^0-9+\-*/.()]/g, '');
         }

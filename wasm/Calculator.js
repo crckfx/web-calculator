@@ -105,6 +105,7 @@ export class Calculator {
         //     this.inputArea.innerHTML = this.inputArea.value;
         // }
         // // this.inputArea.innerHTML = this.inputArea.value;
+        this.inputArea.focus();
         this.softSubmit();
         // Set the cursor position
         // this.setCursorPosition(this.cursorPosition);
@@ -120,7 +121,7 @@ export class Calculator {
         const newPos = initialPos + input.length;
 
         // Insert the character at the cursor position
-        const newValue = 
+        const newValue =
             this.inputArea.value.slice(0, initialPos) +
             input +
             this.inputArea.value.slice(initialPos);
@@ -128,8 +129,8 @@ export class Calculator {
         // Move the cursor position forward
         this.inputArea.setSelectionRange(newPos, newPos);
 
-        // // Update the display
-        // this.updateInputDisplay();
+        // Update the display
+        this.updateInputDisplay();
     }
 
 
@@ -148,11 +149,11 @@ export class Calculator {
     AllClear() {
         this.clearInput();
         this.clearOutput();
+        this.updateInputDisplay();
     }
 
     clearInput() {
-        this.inputArea.value = "";
-        this.updateInputDisplay();
+        this.inputArea.value = "";   
     }
 
     clearOutput() {
@@ -162,39 +163,29 @@ export class Calculator {
     doBackspace() {
         this.inputArea.focus();
         const pos = this.inputArea.selectionStart;
-        if (pos > 0) {
+        if (pos > 1) {
             const newPos = pos - 1;
-            const newInput = 
+            const newInput =
                 this.inputArea.value.slice(0, pos - 1) +
                 this.inputArea.value.slice(pos);
-            this.inputArea.value = newInput;                
+            this.inputArea.value = newInput;
             this.inputArea.setSelectionRange(newPos, newPos);
 
             this.updateInputDisplay();
         }
     }
 
-    doDelete() {
-        if (this.cursorPosition < this.inputArea.value.length) {
-            this.inputArea.value =
-                this.inputArea.value.slice(0, this.cursorPosition) +
-                this.inputArea.value.slice(this.cursorPosition + 1);
-            this.updateInputDisplay();
-        }
-    }
-
-
     submit() {
         this.inputArea.focus();
-        const inputString = this.inputArea.value; 
+        const inputString = this.inputArea.value;
         if (inputString !== "") {
-            const answer = this.parseExpression(inputString); // NOTE 2. THIS SHOULD USE THE DEFINED METHOD NOT A CLASS
+            const answer = this.parseExpression(inputString);   // NOTE 2. THIS SHOULD USE THE DEFINED METHOD NOT A CLASS
             this.outputArea.innerHTML = `${answer}`;
 
             if (!isNaN(answer)) {
-                this.addToHistory(inputString, answer);     // add a valid answer to history
-                this.printHistory();                        // display the history
-                this.outputArea.classList.remove('soft');   // make visuals 'real' (not 'soft')
+                this.addToHistory(inputString, answer);         // add a valid answer to history
+                this.printHistory();                            // display the history
+                this.outputArea.classList.remove('soft');       // make visuals 'real' (not 'soft')
             }
         }
     }
