@@ -19,7 +19,7 @@ export class Calculator {
         this.MAX_INPUT_LEN = 1024;       
 
         // Calculator state
-        this.inputString = "";
+        // this.inputArea.value = "";
         this.cursorPosition = 0;
 
         this.maxHistoryCount = 5;
@@ -99,15 +99,15 @@ export class Calculator {
 
     // --- UI functions ---
     updateInputDisplay() {
-        // if (this.inputString === "") {
+        // if (this.inputArea.value === "") {
         //     this.inputArea.innerHTML = '<span class="placeholder">\u200B</span>';
         // } else {
-        //     this.inputArea.innerHTML = this.inputString;
+        //     this.inputArea.innerHTML = this.inputArea.value;
         // }
-        // // this.inputArea.innerHTML = this.inputString;
-        // this.softSubmit();
-        // // Set the cursor position
-        // this.setCursorPosition(this.cursorPosition);
+        // // this.inputArea.innerHTML = this.inputArea.value;
+        this.softSubmit();
+        // Set the cursor position
+        this.setCursorPosition(this.cursorPosition);
     }
 
 
@@ -123,10 +123,10 @@ export class Calculator {
         console.log(`INPUT: '${char}'`);
 
         // Insert the character at the cursor position
-        this.inputString =
-            this.inputString.slice(0, this.cursorPosition) +
+        this.inputArea.value =
+            this.inputArea.value.slice(0, this.cursorPosition) +
             char +
-            this.inputString.slice(this.cursorPosition);
+            this.inputArea.value.slice(this.cursorPosition);
 
         // Move the cursor position forward
         this.cursorPosition++;
@@ -138,10 +138,10 @@ export class Calculator {
     enterInputString(string) {
         console.log(`INPUT STRING: '${string}'`);
         // Insert the character at the cursor position
-        this.inputString =
-            this.inputString.slice(0, this.cursorPosition) +
+        this.inputArea.value =
+            this.inputArea.value.slice(0, this.cursorPosition) +
             string +
-            this.inputString.slice(this.cursorPosition);
+            this.inputArea.value.slice(this.cursorPosition);
 
         // Move the cursor position forward
         this.cursorPosition += string.length; // expected to work; does not
@@ -169,7 +169,7 @@ export class Calculator {
     }
 
     clearInput() {
-        this.inputString = "";
+        this.inputArea.value = "";
         this.updateInputDisplay();
     }
 
@@ -179,33 +179,33 @@ export class Calculator {
 
     doBackspace() {
         if (this.cursorPosition > 0) {
-            this.inputString =
-                this.inputString.slice(0, this.cursorPosition - 1) +
-                this.inputString.slice(this.cursorPosition);
+            this.inputArea.value =
+                this.inputArea.value.slice(0, this.cursorPosition - 1) +
+                this.inputArea.value.slice(this.cursorPosition);
             this.cursorPosition--;
             this.updateInputDisplay();
         }
     }
 
     doDelete() {
-        if (this.cursorPosition < this.inputString.length) {
-            this.inputString =
-                this.inputString.slice(0, this.cursorPosition) +
-                this.inputString.slice(this.cursorPosition + 1);
+        if (this.cursorPosition < this.inputArea.value.length) {
+            this.inputArea.value =
+                this.inputArea.value.slice(0, this.cursorPosition) +
+                this.inputArea.value.slice(this.cursorPosition + 1);
             this.updateInputDisplay();
         }
     }
 
 
     submit() {
-        if (this.inputString !== "") {
+        if (this.inputArea.value !== "") {
 
-            const answer = this.parseExpression(this.inputString); // NOTE 2. THIS SHOULD USE THE DEFINED METHOD NOT A CLASS
+            const answer = this.parseExpression(this.inputArea.value); // NOTE 2. THIS SHOULD USE THE DEFINED METHOD NOT A CLASS
             this.outputArea.innerHTML = `${answer}`;
 
             if (!isNaN(answer)) {
                 // add a valid answer to history
-                this.addToHistory(this.inputString, answer);
+                this.addToHistory(this.inputArea.value, answer);
                 this.printHistory();
 
                 this.outputArea.classList.remove('soft');
@@ -214,7 +214,7 @@ export class Calculator {
     }
 
     softSubmit() {
-        const answer = this.parseExpression(this.inputString);
+        const answer = this.parseExpression(this.inputArea.value);
         if (!isNaN(answer)) {
             this.outputArea.classList.add('soft');
             this.outputArea.innerHTML = `${answer}`;
@@ -282,7 +282,7 @@ export class Calculator {
         const selection = window.getSelection();
 
         // Ensure the position is within bounds
-        position = Math.min(position, this.inputArea.textContent.length);
+        position = Math.min(position, this.inputArea.value.length);
         position = Math.max(position, 0);
 
         // Set the range at the desired position
@@ -302,7 +302,7 @@ export class Calculator {
         this.updateInputDisplay();
     }
     moveCursorToEnd() {
-        this.cursorPosition = this.inputString.length;
+        this.cursorPosition = this.inputArea.value.length;
         this.updateInputDisplay();
     }
 
@@ -315,7 +315,7 @@ export class Calculator {
         }
     }
     moveCursorRight() {
-        if (this.cursorPosition < this.inputString.length) {
+        if (this.cursorPosition < this.inputArea.value.length) {
             this.cursorPosition++;
             this.updateInputDisplay();
         } else {

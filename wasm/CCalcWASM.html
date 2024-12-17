@@ -55,8 +55,15 @@
             </div>
         </div>
     </div>
+
+    <div>
+        <button
+        onclick="console.log(inputDisplay.value)"
+        >yo get the input string</button></div>
 </body>
 <script>
+    const inputDisplay = document.getElementById('inputArea');
+    
     const allowedCharacters = /^[0-9+\-*/.()^]*$/;
 
     function validateInput(event) {
