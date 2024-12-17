@@ -17,7 +17,7 @@
     <div class='calc_container'>
         <div id="calculator">
             <div id="outputArea"></div>
-            <input id="inputArea" inputmode="none" oninput="validateInput(event)">
+            <input id="inputArea" type="text" inputmode="none" oninput="validateInput(event)">
 
             <div class="buttons mobile">
 
@@ -58,8 +58,8 @@
 
     <div>
         <button
-        onclick="console.log(inputDisplay.value)"
-        >yo get the input string</button></div>
+        onclick="console.log(inputDisplay.selectionStart)"
+        >yo get the cursor</button></div>
 </body>
 <script>
     const inputDisplay = document.getElementById('inputArea');

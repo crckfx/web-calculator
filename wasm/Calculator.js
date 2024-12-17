@@ -16,7 +16,7 @@ export class Calculator {
         this.inputPtr = null;
         this.resultPtr = null;
         this.errorPtr = null;
-        this.MAX_INPUT_LEN = 1024;       
+        this.MAX_INPUT_LEN = 1024;
 
         // Calculator state
         // this.inputArea.value = "";
@@ -54,17 +54,17 @@ export class Calculator {
         }
     }
 
-    
+
     async initializeParser() {
         try {
             this.Parser = await ParserModule();
-            
+
             // Create parser instance
             this.parserPtr = this.Parser.ccall('create_parser', 'number');
-            
+
             // Wrap parser parse function
             this.parser_parse = this.Parser.cwrap('parser_parse', 'number', ['number', 'number', 'number', 'number']);
-            
+
             // Allocate memory
             this.inputPtr = this.Parser._malloc(this.MAX_INPUT_LEN);
             this.resultPtr = this.Parser._malloc(8);
@@ -107,29 +107,34 @@ export class Calculator {
         // // this.inputArea.innerHTML = this.inputArea.value;
         this.softSubmit();
         // Set the cursor position
-        this.setCursorPosition(this.cursorPosition);
+        // this.setCursorPosition(this.cursorPosition);
     }
 
 
     useDigitButton(value) {
-        this.enterInputChar(value);
+        this.enterInput(value);
     }
 
     useOperandButton(value) {
-        this.enterInputChar(value);
+        this.enterInput(value);
     }
 
     enterInputChar(char) {
         console.log(`INPUT: '${char}'`);
+        this.inputArea.focus();
+
+        const initialPos = this.inputArea.selectionStart;
+        const newPos = initialPos + 1;
 
         // Insert the character at the cursor position
-        this.inputArea.value =
-            this.inputArea.value.slice(0, this.cursorPosition) +
+        const newValue = 
+            this.inputArea.value.slice(0, initialPos) +
             char +
-            this.inputArea.value.slice(this.cursorPosition);
-
+            this.inputArea.value.slice(initialPos);
+        this.inputArea.value = newValue;
         // Move the cursor position forward
         this.cursorPosition++;
+        this.inputArea.setSelectionRange(newPos, newPos);
 
         // Update the display
         this.updateInputDisplay();
@@ -139,12 +144,35 @@ export class Calculator {
         console.log(`INPUT STRING: '${string}'`);
         // Insert the character at the cursor position
         this.inputArea.value =
-            this.inputArea.value.slice(0, this.cursorPosition) +
+            this.inputArea.value.slice(0, this.inputArea.selectionStart) +
             string +
-            this.inputArea.value.slice(this.cursorPosition);
+            this.inputArea.value.slice(this.inputArea.selectionStart);
 
         // Move the cursor position forward
-        this.cursorPosition += string.length; // expected to work; does not
+        this.cursorPosition += string.length;
+        this.inputArea.selectionStart += string.length;
+
+        // Update the display
+        this.updateInputDisplay();
+    }
+
+    // misc function to do both/either string/char
+    enterInput(input) {
+        //
+        console.log(`INPUT (manual; misc): '${input}'`);
+        this.inputArea.focus();
+
+        const initialPos = this.inputArea.selectionStart;
+        const newPos = initialPos + input.length;
+
+        // Insert the character at the cursor position
+        const newValue = 
+            this.inputArea.value.slice(0, initialPos) +
+            input +
+            this.inputArea.value.slice(initialPos);
+        this.inputArea.value = newValue;
+        // Move the cursor position forward
+        this.inputArea.setSelectionRange(newPos, newPos);
 
         // Update the display
         this.updateInputDisplay();
@@ -278,23 +306,13 @@ export class Calculator {
     // *** CURSOR **********************
 
     setCursorPosition(position) {
-        const range = document.createRange();
-        const selection = window.getSelection();
-
         // Ensure the position is within bounds
-        position = Math.min(position, this.inputArea.value.length);
-        position = Math.max(position, 0);
+        position = Math.min(Math.max(position, 0), this.inputArea.value.length);
+        // this.cursorPosition = position;
 
-        // Set the range at the desired position
-        range.setStart(this.inputArea.firstChild || this.inputArea, position);
-        range.collapse(true);
-
-        // Remove any existing selections and set the new range
-        selection.removeAllRanges();
-        selection.addRange(range);
-
-        // Update the cursorPosition property
-        this.cursorPosition = position;
+        // Use standard input element cursor positioning
+        this.inputArea.focus();
+        this.inputArea.setSelectionRange(position, position);
     }
 
     moveCursorToStart() {
@@ -307,19 +325,25 @@ export class Calculator {
     }
 
     moveCursorLeft() {
-        if (this.cursorPosition > 0) {
-            this.cursorPosition--;
+        this.inputArea.focus();
+        if (this.inputArea.selectionStart > 0) {
+            const pos = this.inputArea.selectionStart - 1;
+            this.inputArea.setSelectionRange(pos, pos);
+            // this.inputArea.selectionStart--;
             this.updateInputDisplay();
         } else {
-            this.setCursorPosition(this.cursorPosition); // refocus even if no action to ensure cursor remains
+
+            // this.setCursorPosition(this.inputArea.selectionStart); // refocus even if no action to ensure cursor remains
         }
     }
     moveCursorRight() {
-        if (this.cursorPosition < this.inputArea.value.length) {
-            this.cursorPosition++;
+        this.inputArea.focus();
+        if (this.inputArea.selectionStart < this.inputArea.value.length) {
+            const pos = this.inputArea.selectionStart + 1;
+            this.inputArea.setSelectionRange(pos, pos);
             this.updateInputDisplay();
         } else {
-            this.setCursorPosition(this.cursorPosition); // refocus even if no action to ensure cursor remains
+            // this.setCursorPosition(this.inputArea.selectionStart); // refocus even if no action to ensure cursor remains
         }
     }
 
@@ -371,7 +395,7 @@ export class Calculator {
         if (this.Parser && this.parserPtr) {
             // Destroy parser
             this.Parser.ccall('destroy_parser', null, ['number'], [this.parserPtr]);
-            
+
             // Free allocated memory
             this.Parser._free(this.inputPtr);
             this.Parser._free(this.resultPtr);
@@ -379,8 +403,8 @@ export class Calculator {
 
             console.log("WASM Parser resources cleaned up");
         }
-    } 
-    
+    }
+
     testInput(expression, answer) {
         return {
             expression: expression,
@@ -388,6 +412,6 @@ export class Calculator {
             result: this.parseExpression(expression)
         }
     }
-        
+
 }
 
