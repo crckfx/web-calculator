@@ -110,52 +110,6 @@ export class Calculator {
         // this.setCursorPosition(this.cursorPosition);
     }
 
-
-    useDigitButton(value) {
-        this.enterInput(value);
-    }
-
-    useOperandButton(value) {
-        this.enterInput(value);
-    }
-
-    enterInputChar(char) {
-        console.log(`INPUT: '${char}'`);
-        this.inputArea.focus();
-
-        const initialPos = this.inputArea.selectionStart;
-        const newPos = initialPos + 1;
-
-        // Insert the character at the cursor position
-        const newValue = 
-            this.inputArea.value.slice(0, initialPos) +
-            char +
-            this.inputArea.value.slice(initialPos);
-        this.inputArea.value = newValue;
-        // Move the cursor position forward
-        this.cursorPosition++;
-        this.inputArea.setSelectionRange(newPos, newPos);
-
-        // Update the display
-        this.updateInputDisplay();
-    }
-
-    enterInputString(string) {
-        console.log(`INPUT STRING: '${string}'`);
-        // Insert the character at the cursor position
-        this.inputArea.value =
-            this.inputArea.value.slice(0, this.inputArea.selectionStart) +
-            string +
-            this.inputArea.value.slice(this.inputArea.selectionStart);
-
-        // Move the cursor position forward
-        this.cursorPosition += string.length;
-        this.inputArea.selectionStart += string.length;
-
-        // Update the display
-        this.updateInputDisplay();
-    }
-
     // misc function to do both/either string/char
     enterInput(input) {
         //
@@ -174,8 +128,8 @@ export class Calculator {
         // Move the cursor position forward
         this.inputArea.setSelectionRange(newPos, newPos);
 
-        // Update the display
-        this.updateInputDisplay();
+        // // Update the display
+        // this.updateInputDisplay();
     }
 
 
@@ -186,7 +140,7 @@ export class Calculator {
         const h = this.history[lastIndex]; // this nearly works but crashes at index 0
         if (h && typeof h.answer === "number") {
             // guaranteed to be a number here. cast to string so it can be concatenated properly
-            this.enterInputString(h.answer.toString());
+            this.enterInput(h.answer.toString());
         }
     }
 
@@ -206,11 +160,16 @@ export class Calculator {
     }
 
     doBackspace() {
-        if (this.cursorPosition > 0) {
-            this.inputArea.value =
-                this.inputArea.value.slice(0, this.cursorPosition - 1) +
-                this.inputArea.value.slice(this.cursorPosition);
-            this.cursorPosition--;
+        this.inputArea.focus();
+        const pos = this.inputArea.selectionStart;
+        if (pos > 0) {
+            const newPos = pos - 1;
+            const newInput = 
+                this.inputArea.value.slice(0, pos - 1) +
+                this.inputArea.value.slice(pos);
+            this.inputArea.value = newInput;                
+            this.inputArea.setSelectionRange(newPos, newPos);
+
             this.updateInputDisplay();
         }
     }
@@ -226,22 +185,22 @@ export class Calculator {
 
 
     submit() {
-        if (this.inputArea.value !== "") {
-
-            const answer = this.parseExpression(this.inputArea.value); // NOTE 2. THIS SHOULD USE THE DEFINED METHOD NOT A CLASS
+        this.inputArea.focus();
+        const inputString = this.inputArea.value; 
+        if (inputString !== "") {
+            const answer = this.parseExpression(inputString); // NOTE 2. THIS SHOULD USE THE DEFINED METHOD NOT A CLASS
             this.outputArea.innerHTML = `${answer}`;
 
             if (!isNaN(answer)) {
-                // add a valid answer to history
-                this.addToHistory(this.inputArea.value, answer);
-                this.printHistory();
-
-                this.outputArea.classList.remove('soft');
+                this.addToHistory(inputString, answer);     // add a valid answer to history
+                this.printHistory();                        // display the history
+                this.outputArea.classList.remove('soft');   // make visuals 'real' (not 'soft')
             }
         }
     }
 
     softSubmit() {
+        this.inputArea.focus();
         const answer = this.parseExpression(this.inputArea.value);
         if (!isNaN(answer)) {
             this.outputArea.classList.add('soft');
@@ -253,17 +212,15 @@ export class Calculator {
         }
     }
 
-
-
     // --- UI binding ---
     bindCharButton(button) {
         const value = button.value;
         if (button.classList.contains("digit")) {
             // console.log(`binding target: ${button.value} as a digit`);
-            button.addEventListener('click', () => this.useDigitButton(value));
+            button.addEventListener('click', () => this.enterInput(value));
         } else if (button.classList.contains("operand")) {
             // console.log(`binding target: ${button.value} as an operand`);
-            button.addEventListener('click', () => this.useOperandButton(value));
+            button.addEventListener('click', () => this.enterInput(value));
         } else {
             console.error(`tried to bind button of unknown type: '${value}'`);
         }
@@ -329,11 +286,7 @@ export class Calculator {
         if (this.inputArea.selectionStart > 0) {
             const pos = this.inputArea.selectionStart - 1;
             this.inputArea.setSelectionRange(pos, pos);
-            // this.inputArea.selectionStart--;
             this.updateInputDisplay();
-        } else {
-
-            // this.setCursorPosition(this.inputArea.selectionStart); // refocus even if no action to ensure cursor remains
         }
     }
     moveCursorRight() {
@@ -342,8 +295,6 @@ export class Calculator {
             const pos = this.inputArea.selectionStart + 1;
             this.inputArea.setSelectionRange(pos, pos);
             this.updateInputDisplay();
-        } else {
-            // this.setCursorPosition(this.inputArea.selectionStart); // refocus even if no action to ensure cursor remains
         }
     }
 
@@ -360,10 +311,11 @@ export class Calculator {
         }
     }
     // ******************************************************************
-
+    // 
     // ******************************************************************
-    // *** HISTORY **********************    
-
+    // ******** HISTORY *****************    
+    // **********************************
+    // append the history
     addToHistory(inputString, answer) {
         if (this.history.length < this.maxHistoryCount) {
             this.history.push({ str: inputString, answer: answer });
@@ -374,7 +326,7 @@ export class Calculator {
         // Update current index to the next position (circular behavior)
         this.historyIndex = (this.historyIndex + 1) % this.maxHistoryCount;
     }
-
+    // output the history
     printHistory() {
         // set a variable for the string
         let historyString = "historyString: ";
@@ -387,10 +339,13 @@ export class Calculator {
             const hi = this.history[index];
             historyString += `\n${hi.str} = ${hi.answer},`;
         }
-
         console.log(historyString);
     }
     // ******************************************************************
+    // ********** MISC ******************
+    // **********************************
+    //
+    // ** FOR TIDYING UP THE WASM/C **
     cleanup() {
         if (this.Parser && this.parserPtr) {
             // Destroy parser
@@ -404,7 +359,8 @@ export class Calculator {
             console.log("WASM Parser resources cleaned up");
         }
     }
-
+    //
+    // ** FOR TESTER **
     testInput(expression, answer) {
         return {
             expression: expression,
@@ -412,6 +368,7 @@ export class Calculator {
             result: this.parseExpression(expression)
         }
     }
+    // ******************************************************************
 
 }
 
