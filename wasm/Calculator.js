@@ -6,7 +6,7 @@ export class Calculator {
         // DOM elements
         this.calculator = domObject;
 
-        this.inputZone = this.calculator.querySelector("#inputZone");
+        this.inputArea = this.calculator.querySelector("#inputArea");
         this.outputArea = this.calculator.querySelector("#outputArea");
 
         // WASM Parser setup
@@ -91,30 +91,23 @@ export class Calculator {
         const controls = this.calculator.querySelectorAll("button.control");
         this.bindControlButtons(controls);
 
-        // // Prevent default typing behavior
-        // this.inputZone.addEventListener('keydown', (event) => {
-        //     // this.handleKeyPress(event);
-        //     event.preventDefault();
-        // });
         // Update cursor position when user clicks or navigates
-        this.inputZone.addEventListener('click', () => this.updateCursorPositionFromDOM());
-        // this.inputZone.addEventListener('keyup', () => this.updateCursorPositionFromDOM());
-        
-        this.inputZone.addEventListener('input', () => this.updateCursorPositionFromDOM());
+        // this.inputArea.addEventListener('click', () => this.updateCursorPositionFromDOM());        
+        // this.inputArea.addEventListener('input', () => this.updateCursorPositionFromDOM());
         this.updateInputDisplay();
     }
 
     // --- UI functions ---
     updateInputDisplay() {
-        if (this.inputString === "") {
-            this.inputZone.innerHTML = '<span class="placeholder">\u200B</span>';
-        } else {
-            this.inputZone.innerHTML = this.inputString;
-        }
-        // this.inputZone.innerHTML = this.inputString;
-        this.softSubmit();
-        // Set the cursor position
-        this.setCursorPosition(this.cursorPosition);
+        // if (this.inputString === "") {
+        //     this.inputArea.innerHTML = '<span class="placeholder">\u200B</span>';
+        // } else {
+        //     this.inputArea.innerHTML = this.inputString;
+        // }
+        // // this.inputArea.innerHTML = this.inputString;
+        // this.softSubmit();
+        // // Set the cursor position
+        // this.setCursorPosition(this.cursorPosition);
     }
 
 
@@ -289,11 +282,11 @@ export class Calculator {
         const selection = window.getSelection();
 
         // Ensure the position is within bounds
-        position = Math.min(position, this.inputZone.textContent.length);
+        position = Math.min(position, this.inputArea.textContent.length);
         position = Math.max(position, 0);
 
         // Set the range at the desired position
-        range.setStart(this.inputZone.firstChild || this.inputZone, position);
+        range.setStart(this.inputArea.firstChild || this.inputArea, position);
         range.collapse(true);
 
         // Remove any existing selections and set the new range
@@ -336,7 +329,7 @@ export class Calculator {
             const range = selection.getRangeAt(0);
 
             // Ensure the selection is within inputArea
-            if (this.inputZone.contains(range.startContainer)) {
+            if (this.inputArea.contains(range.startContainer)) {
                 // Update cursorPosition
                 this.cursorPosition = range.startOffset;
             }

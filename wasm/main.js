@@ -6,7 +6,7 @@ export const calculator = new Calculator(document.getElementById("calculator"));
 
 async function initializeApp() {
 
-    initKeyboard(calculator);
+    // initKeyboard(calculator);
 
     await calculator.initializeParser(); // we're async because we need to make sure the WASM parser is loaded
 
