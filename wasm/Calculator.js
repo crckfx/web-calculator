@@ -83,6 +83,15 @@ export class Calculator {
         const controls = this.calculator.querySelectorAll("button.control");
         this.bindControlButtons(controls);
 
+
+
+        this.inputArea.addEventListener('keydown', (e) => {
+            if (e.key === "=" || e.key === "Enter") {
+                // console.log(e.key);
+                this.submit();
+            }
+        });
+
         this.updateInputDisplay();
     }
 
