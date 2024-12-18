@@ -7,19 +7,13 @@
 
 #calculator {
     background-color: #555;
-    /* display: grid; */
     font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans", sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji";
     padding: 10px;
-
     max-width: 500px;
-
     flex: 1;
-    /* only for if it's a flex item */
-    width: 100%;
-
+    width: 100%; /* only for if it's a flex item */
     box-sizing: border-box;
     overflow: hidden;
-
 }
 
 #calculator .buttons.mobile {

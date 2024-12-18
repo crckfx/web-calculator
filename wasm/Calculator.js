@@ -142,10 +142,10 @@ export class Calculator {
     doBackspace() {
         this.inputArea.focus();
         const pos = this.inputArea.selectionStart;
-        if (pos > 1) {
+        if (pos > 0) {
             const newPos = pos - 1;
             const newInput =
-                this.inputArea.value.slice(0, pos - 1) +
+                this.inputArea.value.slice(0, newPos) +
                 this.inputArea.value.slice(pos);
             this.inputArea.value = newInput;
             this.inputArea.setSelectionRange(newPos, newPos);
