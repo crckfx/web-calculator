@@ -7,6 +7,7 @@ export class Calculator {
         this.calculator = domObject;
 
         this.inputArea = this.calculator.querySelector("#inputArea");
+        this.allowedCharacters = /^[0-9+\-*/.()^]*$/;
         this.outputArea = this.calculator.querySelector("#outputArea");
 
         // WASM Parser setup
@@ -51,6 +52,7 @@ export class Calculator {
         }
     }
 
+    // --- Initialization ---
     async initializeParser() {
         try {
             this.Parser = await ParserModule();
@@ -67,9 +69,8 @@ export class Calculator {
             console.error("Failed to initialize WASM Parser:", error);
         }
     }
-
-    // --- Initialization ---
-    initialize() {
+    async initialize() {
+        await this.initializeParser();
         // Bind digit and operand buttons
         const digits = this.calculator.querySelectorAll("button.digit");
         for (let i = 0; i < digits.length; i++) {
@@ -83,17 +84,36 @@ export class Calculator {
         const controls = this.calculator.querySelectorAll("button.control");
         this.bindControlButtons(controls);
 
-
-
+        this.inputArea.addEventListener('input', () => {
+            this.validateInput();
+        })
         this.inputArea.addEventListener('keydown', (e) => {
-            if (e.key === "=" || e.key === "Enter") {
-                // console.log(e.key);
-                this.submit();
-            }
+            // if (e.key === "=" || e.key === "Enter") {
+            //     // console.log(e.key);
+            //     this.submit();
+            // }
+
+            switch (e.key) {
+                case '=':
+                case 'Enter':
+                    this.submit();
+                    break;
+                case 'Escape':
+                    this.AllClear();
+                    break;
+            }            
         });
 
         this.updateInputDisplay();
     }
+
+
+    validateInput() {
+        const value = this.inputArea.value;
+        if (!this.allowedCharacters.test(value)) {
+            this.inputArea.value = value.replace(/[^0-9+\-*/.()]/g, '');
+        }
+    }    
 
     // --- UI functions ---
     updateInputDisplay() {
@@ -341,7 +361,8 @@ export class Calculator {
             result: this.parseExpression(expression)
         }
     }
-    // ******************************************************************
+
+
 
 }
 

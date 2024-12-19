@@ -14,9 +14,9 @@
     <div class='calc_container'>
         <div id="calculator">
             <div id="outputArea"></div>
-            <input id="inputArea" type="text" inputmode="none" oninput="validateInput(event)">
+            <input id="inputArea" type="text" inputmode="none">
 
-            <div class="buttons mobile">
+            <div class="buttons">
 
                 <button class="control button" value="CLEAR" id="clear">AC</button>
                 <button class="control button" value="ARROWLEFT" id="arrowLeft">←</button>
@@ -53,23 +53,15 @@
         </div>
     </div>
 
-    <div>
-        <button
-        onclick="console.log(inputDisplay.selectionStart)"
-        >yo get the cursor</button></div>
+    
+    <div style="display:none;">  <!-- remove me later -->
+        <button onclick="console.log(inputDisplay.selectionStart)">
+            yo get the cursor
+        </button>
+    </div>
 </body>
 <script>
-    const inputDisplay = document.getElementById('inputArea');
-    
-    const allowedCharacters = /^[0-9+\-*/.()^]*$/;
 
-    function validateInput(event) {
-        const inputDisplay = event.target;
-        const value = inputDisplay.value;
-        if (!allowedCharacters.test(value)) {
-            inputDisplay.value = value.replace(/[^0-9+\-*/.()]/g, '');
-        }
-    }
 
 </script>
 
