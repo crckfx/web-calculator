@@ -1600,13 +1600,13 @@ function createExportWrapper(name, fixedasm) {
 
 var wasmBinaryFile;
 if (Module['locateFile']) {
-  wasmBinaryFile = 'parser2.wasm';
+  wasmBinaryFile = 'parser.wasm';
   if (!isDataURI(wasmBinaryFile)) {
     wasmBinaryFile = locateFile(wasmBinaryFile);
   }
 } else {
   // Use bundler-friendly `new URL(..., import.meta.url)` pattern; works in browsers too.
-  wasmBinaryFile = new URL('parser2.wasm', import.meta.url).toString();
+  wasmBinaryFile = new URL('parser.wasm', import.meta.url).toString();
 }
 
 function getBinary(file) {

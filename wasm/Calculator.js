@@ -1,4 +1,4 @@
-import ParserModule from './build/parser2.js';
+import ParserModule from './build/parser.js';
 
 // calculator.js
 export class Calculator {
@@ -20,13 +20,70 @@ export class Calculator {
         this.MAX_INPUT_LEN = 1024;
 
         // Calculator state
-        // this.inputArea.value = "";
         this.cursorPosition = 0;
-
         this.maxHistoryCount = 5;
         this.history = [];      // add history member var
         this.historyIndex = 0;
     }
+
+    // --- Initialization ---
+    // code to load the WASM Parser
+    async loadParser() {
+        try {
+            this.Parser = await ParserModule();
+            // Create parser instance
+            this.parserPtr = this.Parser.ccall('create_parser', 'number');
+            // Wrap parser parse function
+            this.parser_parse = this.Parser.cwrap('parser_parse', 'number', ['number', 'number', 'number', 'number']);
+            // Allocate memory
+            this.inputPtr = this.Parser._malloc(this.MAX_INPUT_LEN);
+            this.resultPtr = this.Parser._malloc(8);
+            this.errorPtr = this.Parser._malloc(256);
+            console.log("WASM Parser initialized successfully");
+        } catch (error) {
+            console.error("Failed to initialize WASM Parser:", error);
+        }
+    }
+    async initialize() {
+        await this.loadParser();
+        // Bind digit and operand buttons
+        const digits = this.calculator.querySelectorAll("button.digit");
+        for (let i = 0; i < digits.length; i++) {
+            this.bindCharButton(digits[i]);
+        }
+        const operands = this.calculator.querySelectorAll("button.operand");
+        for (let i = 0; i < operands.length; i++) {
+            this.bindCharButton(operands[i]);
+        }
+        // Bind control buttons
+        const controls = this.calculator.querySelectorAll("button.control");
+        this.bindControlButtons(controls);
+
+        this.inputArea.addEventListener('input', () => {
+            this.validateInput();
+        })
+        this.inputArea.addEventListener('keydown', (e) => {
+            switch (e.key) {
+                case '=':
+                case 'Enter':
+                    this.submit();
+                    break;
+                case 'Escape':
+                    this.AllClear();
+                    break;
+            }            
+        });
+
+        this.updateInputDisplay();
+    }
+
+
+    validateInput() {
+        const value = this.inputArea.value;
+        if (!this.allowedCharacters.test(value)) {
+            this.inputArea.value = value.replace(/[^0-9+\-*/.()]/g, '');
+        }
+    }    
 
     parseExpression(expr) {
         if (!this.Parser || this.parserPtr === null) {
@@ -52,68 +109,6 @@ export class Calculator {
         }
     }
 
-    // --- Initialization ---
-    async initializeParser() {
-        try {
-            this.Parser = await ParserModule();
-            // Create parser instance
-            this.parserPtr = this.Parser.ccall('create_parser', 'number');
-            // Wrap parser parse function
-            this.parser_parse = this.Parser.cwrap('parser_parse', 'number', ['number', 'number', 'number', 'number']);
-            // Allocate memory
-            this.inputPtr = this.Parser._malloc(this.MAX_INPUT_LEN);
-            this.resultPtr = this.Parser._malloc(8);
-            this.errorPtr = this.Parser._malloc(256);
-            console.log("WASM Parser initialized successfully");
-        } catch (error) {
-            console.error("Failed to initialize WASM Parser:", error);
-        }
-    }
-    async initialize() {
-        await this.initializeParser();
-        // Bind digit and operand buttons
-        const digits = this.calculator.querySelectorAll("button.digit");
-        for (let i = 0; i < digits.length; i++) {
-            this.bindCharButton(digits[i]);
-        }
-        const operands = this.calculator.querySelectorAll("button.operand");
-        for (let i = 0; i < operands.length; i++) {
-            this.bindCharButton(operands[i]);
-        }
-        // Bind control buttons
-        const controls = this.calculator.querySelectorAll("button.control");
-        this.bindControlButtons(controls);
-
-        this.inputArea.addEventListener('input', () => {
-            this.validateInput();
-        })
-        this.inputArea.addEventListener('keydown', (e) => {
-            // if (e.key === "=" || e.key === "Enter") {
-            //     // console.log(e.key);
-            //     this.submit();
-            // }
-
-            switch (e.key) {
-                case '=':
-                case 'Enter':
-                    this.submit();
-                    break;
-                case 'Escape':
-                    this.AllClear();
-                    break;
-            }            
-        });
-
-        this.updateInputDisplay();
-    }
-
-
-    validateInput() {
-        const value = this.inputArea.value;
-        if (!this.allowedCharacters.test(value)) {
-            this.inputArea.value = value.replace(/[^0-9+\-*/.()]/g, '');
-        }
-    }    
 
     // --- UI functions ---
     updateInputDisplay() {
@@ -252,7 +247,6 @@ export class Calculator {
                     console.log(`UNMANAGED CONTROL VALUE ${value}`);
                     break;
             }
-
         }
     }
 
@@ -302,12 +296,11 @@ export class Calculator {
         }
         this.inputArea.focus();
     }    
-
     // ******************************************************************
-    // 
+ 
     // ******************************************************************
     // ******** HISTORY *****************    
-    // **********************************
+    //
     // append the history
     addToHistory(inputString, answer) {
         if (this.history.length < this.maxHistoryCount) {
@@ -319,6 +312,7 @@ export class Calculator {
         // Update current index to the next position (circular behavior)
         this.historyIndex = (this.historyIndex + 1) % this.maxHistoryCount;
     }
+    //
     // output the history
     printHistory() {
         // set a variable for the string
@@ -336,7 +330,6 @@ export class Calculator {
     }
     // ******************************************************************
     // ********** MISC ******************
-    // **********************************
     //
     // ** FOR TIDYING UP THE WASM/C **
     cleanup() {
@@ -361,8 +354,7 @@ export class Calculator {
             result: this.parseExpression(expression)
         }
     }
-
-
+    // ******************************************************************
 
 }
 
