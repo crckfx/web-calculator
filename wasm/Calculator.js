@@ -24,6 +24,9 @@ export class Calculator {
         this.maxHistoryCount = 5;
         this.history = [];      // add history member var
         this.historyIndex = 0;
+
+        this.lastInput = null;
+
     }
 
     // --- Initialization ---
@@ -73,6 +76,12 @@ export class Calculator {
                     break;
             }            
         });
+        this.outputArea.addEventListener('click', () => {
+            // console.log(`you want to use an old answer hey, possibly '${this.lastInput}'`);
+            this.outputArea.innerHTML = "";
+            this.inputArea.value = this.lastInput;
+            this.inputArea.focus();
+        });
 
         this.updateInputDisplay();
     }
@@ -113,7 +122,7 @@ export class Calculator {
     // --- UI functions ---
     updateInputDisplay() {
         this.inputArea.focus();
-        this.softSubmit();
+        // this.softSubmit();
     }
 
     // misc function to do both/either string/char
@@ -179,16 +188,23 @@ export class Calculator {
     }
 
     submit() {
-        this.inputArea.focus();
+        // this.inputArea.focus();
+        // get the string and save it
         const inputString = this.inputArea.value;
         if (inputString !== "") {
             const answer = this.parseExpression(inputString);   // NOTE 2. THIS SHOULD USE THE DEFINED METHOD NOT A CLASS
-            this.outputArea.innerHTML = `${answer}`;
-
+            // this.outputArea.innerHTML = `${answer}`;
+            this.outputArea.innerHTML = `${inputString} = ${answer}`;
+            
             if (!isNaN(answer)) {
+                this.inputArea.value = `${answer}`;
+                this.lastInput = inputString // save the input as last
                 this.addToHistory(inputString, answer);         // add a valid answer to history
                 this.printHistory();                            // display the history
-                this.outputArea.classList.remove('soft');       // make visuals 'real' (not 'soft')
+                // this.outputArea.classList.remove('soft');       // make visuals 'real' (not 'soft')
+                this.moveCursorToEnd();
+                this.outputArea.focus();
+                
             }
         }
     }
@@ -222,7 +238,7 @@ export class Calculator {
         for (let i = 0; i < controls.length; i++) {
             const button = controls[i];
             const value = button.value;
-
+            // bind custom string codes for UI buttons
             switch (value) {
                 case 'DELETE':
                     button.addEventListener('click', () => this.doBackspace());
@@ -355,6 +371,10 @@ export class Calculator {
         }
     }
     // ******************************************************************
+
+    showAnswer() {
+
+    }
 
 }
 

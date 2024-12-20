@@ -1,6 +1,3 @@
-<!-- <script src="./main.js"></script> -->
-
-
 <!DOCTYPE html>
 <html>
 
@@ -9,72 +6,65 @@
     <meta http-equiv='X-UA-Compatible' content='IE=edge'>
     <title>CCalculator</title>
     <meta name='viewport' content='width=device-width, initial-scale=1'>
+    <!-- <link rel='stylesheet' type='text/css' media='screen' href='../calculator.css'> -->
     <link rel='stylesheet' type='text/css' media='screen' href='calculator-test.css'>
 </head>
 
 <body>
     <div class='calc_container'>
         <div id="calculator">
-            <div id="outputArea"></div>
-            
-            <input 
-            id="inputArea"
-            type="text" 
-            oninput="validateInput(event)"
-            style = "text-align: right;"
-            >
-            <script>
-                const allowedCharacters = /^[0-9+\-*/.()^]*$/;
-        
-                function validateInput(event) {
-                    const inputDisplay = event.target;
-                    const value = inputDisplay.value;
-        
-                    if (!allowedCharacters.test(value)) {
-                        inputDisplay.value = value.replace(/[^0-9+\-*/.()]/g, '');
-                    }
-                }
-            </script>            
+            <div id="outputArea">Some number</div>
+            <input id="inputArea" type="text" inputmode="none" value="Some text">
 
-            <div class="buttons mobile">
-            
+            <div class="buttons">
+
                 <button class="control button" value="CLEAR" id="clear">AC</button>
                 <button class="control button" value="ARROWLEFT" id="arrowLeft">←</button>
                 <button class="control button" value="ARROWRIGHT" id="arrowRight">→</button>
                 <button class="operand button" value="^" id="exponent">^</button>
-    
+
                 <button class="control button" value="ANS" id="ANS">ANS</button>
                 <button class="operand button" value=( id="leftBracket">(</button>
                 <button class="operand button" value=) id="rightBracket">)</button>
                 <button class="operand button" value=/ id="divide">÷</button>
-    
+
                 <button class="digit button" value="1">1</button>
                 <button class="digit button" value="2">2</button>
                 <button class="digit button" value="3">3</button>
                 <button class="operand button" value="*" id="multiply">*</button>
-    
+
                 <button class="digit button" value="4">4</button>
                 <button class="digit button" value="5">5</button>
                 <button class="digit button" value="6">6</button>
                 <button class="operand button" value="-" id="subtract">-</button>
-    
+
                 <button class="digit button" value="7">7</button>
                 <button class="digit button" value="8">8</button>
                 <button class="digit button" value="9">9</button>
                 <button class="operand button" value="+" id="add">+</button>
-    
-    
+
                 <button class="digit button" value="0">0</button>
                 <button class="operand button" value="." id="decimal">.</button>
                 <button class="control button" value="DELETE" id="delete">⌫</button>
                 <button class="control button" value="=" id="enter">=</button>
-    
+
             </div>
         </div>
     </div>
+
+    
+    <div style="display:none;">  <!-- remove me later -->
+        <button onclick="console.log(inputDisplay.selectionStart)">
+            yo get the cursor
+        </button>
+    </div>
 </body>
-<!-- <script type='module' src='main.js'></script> -->
-<!-- <script type='module' src='tester_wasm.js'></script> -->
-<script src='test.js'></script>
+<script>
+
+
+</script>
+
+<script type='module' src='main.js'></script>
+<script type='module' src='tester_wasm.js'></script>
 
 </html>
