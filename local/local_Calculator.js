@@ -3,22 +3,26 @@ class Calculator {
     constructor(domObject) {
         // DOM elements
         this.calculator = domObject;
-        this.parser = new Parser();
-        // this.inputZone = this.calculator.querySelector("#inputArea");
-        this.inputZone = this.calculator.querySelector("#inputZone");
+
+        this.inputArea = this.calculator.querySelector("#inputArea");
+        this.allowedCharacters = /^[0-9+\-*/.()^]*$/;
         this.outputArea = this.calculator.querySelector("#outputArea");
 
-        // Calculator state
-        this.inputString = "";
-        this.lastAnswer = null;
-        this.cursorPosition = 0;
+        this.parser = new Parser();
 
-        // Bind UI elements to events
-        this.initialize();
+        // Calculator state
+        this.cursorPosition = 0;
+        this.maxHistoryCount = 5;
+        this.history = [];      // add history member var
+        this.historyIndex = 0;
+
+        this.lastInput = null;
     }
 
-    // --- Initialization ---
+
     initialize() {
+        // do not need to await a parser here because we instantiated it in javascript (vs. WASM)
+
         // Bind digit and operand buttons
         const digits = this.calculator.querySelectorAll("button.digit");
         for (let i = 0; i < digits.length; i++) {
@@ -32,159 +36,173 @@ class Calculator {
         const controls = this.calculator.querySelectorAll("button.control");
         this.bindControlButtons(controls);
 
-        // Prevent default typing behavior
-        this.inputZone.addEventListener('keydown', (event) => {
-            // this.handleKeyPress(event);
-            event.preventDefault();
+        this.inputArea.addEventListener('input', () => {
+            this.validateInput();
+        })
+        this.inputArea.addEventListener('keydown', (e) => {
+            switch (e.key) {
+                case '=':
+                case 'Enter':
+                    this.submit();
+                    break;
+                case 'Escape':
+                    this.AllClear();
+                    break;
+            }            
         });
-        // Update cursor position when user clicks or navigates
-        this.inputZone.addEventListener('click', () => this.updateCursorPositionFromDOM());
-        this.inputZone.addEventListener('keyup', () => this.updateCursorPositionFromDOM());
+        this.outputArea.addEventListener('click', () => {
+            // console.log(`you want to use an old answer hey, possibly '${this.lastInput}'`);
+            this.outputArea.innerHTML = "";
+            this.inputArea.value = this.lastInput;
+            this.inputArea.focus();
+        });
 
         this.updateInputDisplay();
     }
+
+
+    validateInput() {
+        const value = this.inputArea.value;
+        if (!this.allowedCharacters.test(value)) {
+            this.inputArea.value = value.replace(/[^0-9+\-*/.()]/g, '');
+        }
+    }    
+
+    // parseExpression(expr) {
+    //     if (!this.Parser || this.parserPtr === null) {
+    //         console.error("Parser not initialized yet!");
+    //         return NaN;
+    //     }
+    //     if (expr.length + 1 > this.MAX_INPUT_LEN) {
+    //         console.error("Input too large for the pre-allocated buffer!");
+    //         return NaN;
+    //     }
+    //     // Convert input to UTF-8 in WASM memory
+    //     this.Parser.stringToUTF8(expr, this.inputPtr, this.MAX_INPUT_LEN);
+    //     // Parse the expression
+    //     const success = this.parser_parse(this.parserPtr, this.inputPtr, this.resultPtr, this.errorPtr);
+    //     if (success) {
+    //         const result = this.Parser.getValue(this.resultPtr, 'double');
+    //         // console.log(`Result for "${expr}": ${result}`);
+    //         return result;
+    //     } else {
+    //         const errorMessage = this.Parser.UTF8ToString(this.errorPtr);
+    //         // console.error(`Error parsing "${expr}": ${errorMessage}`);
+    //         return NaN;
+    //     }
+    // }
+
 
     // --- UI functions ---
     updateInputDisplay() {
-        if (this.inputString === "") {
-            this.inputZone.innerHTML = '<span class="placeholder">\u200B</span>';
-        } else {
-            this.inputZone.innerHTML = this.inputString;
-        }
-        // this.inputZone.innerHTML = this.inputString;
-        this.softSubmit();
-        // Set the cursor position
-        this.setCursorPosition(this.cursorPosition);
+        this.inputArea.focus();
+        // this.softSubmit();
     }
 
+    // misc function to do both/either string/char
+    enterInput(input) {
+        //
+        console.log(`INPUT (manual; misc): '${input}'`);
+        this.inputArea.focus();
 
-    useDigitButton(value) {
-        this.enterInputChar(value);
-    }
-
-    useOperandButton(value) {
-        this.enterInputChar(value);
-    }
-
-    // enterInputChar(char) {
-    //     console.log(`INPUT: '${char}'`);
-    //     this.inputString += char;
-    //     // Move the cursor position forward
-    //     this.cursorPosition++;
-
-    //     this.updateInputDisplay();
-    // }
-
-    enterInputChar(char) {
-        console.log(`INPUT: '${char}'`);
+        const initialPos = this.inputArea.selectionStart;
+        const newPos = initialPos + input.length;
 
         // Insert the character at the cursor position
-        this.inputString =
-            this.inputString.slice(0, this.cursorPosition) +
-            char +
-            this.inputString.slice(this.cursorPosition);
-
+        const newValue =
+            this.inputArea.value.slice(0, initialPos) +
+            input +
+            this.inputArea.value.slice(initialPos);
+        this.inputArea.value = newValue;
         // Move the cursor position forward
-        this.cursorPosition++;
+        this.inputArea.setSelectionRange(newPos, newPos);
 
         // Update the display
         this.updateInputDisplay();
     }
-
-    enterInputString(string) {
-        console.log(`INPUT STRING: '${string}'`);
-
-        // Insert the character at the cursor position
-        this.inputString =
-            this.inputString.slice(0, this.cursorPosition) +
-            string +
-            this.inputString.slice(this.cursorPosition);
-
-        // Move the cursor position forward
-        this.cursorPosition += string.length; // expected to work; does not
-
-        // Update the display
-        this.updateInputDisplay();
-    }
-
-
 
     inputLastAnswer() {
-        if (typeof this.lastAnswer === "number") {
+        // use the history array, instead of a "lastAnswer" variable
+        const lastIndex = (this.historyIndex - 1 + this.maxHistoryCount) % this.maxHistoryCount; // 
+        const h = this.history[lastIndex]; // this nearly works but crashes at index 0
+        if (h && typeof h.answer === "number") {
             // guaranteed to be a number here. cast to string so it can be concatenated properly
-            this.enterInputString(this.lastAnswer.toString());
+            this.enterInput(h.answer.toString());
         }
     }
 
+    // function to clear the input and the output
     AllClear() {
         this.clearInput();
         this.clearOutput();
+        this.updateInputDisplay();
     }
 
     clearInput() {
-        this.inputString = "";
-        this.updateInputDisplay();
+        this.inputArea.value = "";   
     }
 
     clearOutput() {
         this.outputArea.innerHTML = "";
     }
 
-    // doBackspace() {
-    //     this.inputString = this.inputString.slice(0, -1);
-    //     this.updateInputDisplay();
-    // }
-
     doBackspace() {
-        if (this.cursorPosition > 0) {
-            this.inputString =
-                this.inputString.slice(0, this.cursorPosition - 1) +
-                this.inputString.slice(this.cursorPosition);
-            this.cursorPosition--;
+        this.inputArea.focus();
+        const pos = this.inputArea.selectionStart;
+        if (pos > 0) {
+            const newPos = pos - 1;
+            const newInput =
+                this.inputArea.value.slice(0, newPos) +
+                this.inputArea.value.slice(pos);
+            this.inputArea.value = newInput;
+            this.inputArea.setSelectionRange(newPos, newPos);
+
             this.updateInputDisplay();
         }
     }
-
-    doDelete() {
-        if (this.cursorPosition < this.inputString.length) {
-            this.inputString =
-                this.inputString.slice(0, this.cursorPosition) +
-                this.inputString.slice(this.cursorPosition + 1);
-            this.updateInputDisplay();
-        }
-    }
-
 
     submit() {
-        if (this.inputString !== "") {
-            // const str = this.inputString;
-            // this.clearInput(); // flush the input string
-            const answer = this.parser.parse(this.inputString); // use parser
-            this.outputArea.innerHTML = `${answer}`;
-            if (typeof answer === "number") {
-                this.lastAnswer = answer; // set it into the class property
+        // this.inputArea.focus();
+        // get the string and save it
+        const inputString = this.inputArea.value;
+        if (inputString !== "") {
+            const answer = this.parser.parse(inputString);   // NOTE 2. THIS SHOULD USE THE DEFINED METHOD NOT A CLASS
+            // this.outputArea.innerHTML = `${answer}`;
+            this.outputArea.innerHTML = `${inputString} = ${answer}`;
+            
+            if (!isNaN(answer)) {
+                this.inputArea.value = `${answer}`;
+                this.lastInput = inputString // save the input as last
+                this.addToHistory(inputString, answer);         // add a valid answer to history
+                this.printHistory();                            // display the history
+                // this.outputArea.classList.remove('soft');       // make visuals 'real' (not 'soft')
+                this.moveCursorToEnd();
+                this.outputArea.focus();
+                
             }
         }
     }
 
     softSubmit() {
-        const answer = this.parser.parse(this.inputString); // use parser
-        if (typeof answer === "number") {
+        this.inputArea.focus();
+        const answer = this.parser.parse(this.inputArea.value);
+        if (!isNaN(answer)) {
+            this.outputArea.classList.add('soft');
             this.outputArea.innerHTML = `${answer}`;
+        } else {
+            if (!this.outputArea.classList.contains('soft')) {
+                this.outputArea.classList.add('soft');
+            }
         }
     }
-
-
 
     // --- UI binding ---
     bindCharButton(button) {
         const value = button.value;
         if (button.classList.contains("digit")) {
-            // console.log(`binding target: ${button.value} as a digit`);
-            button.addEventListener('click', () => this.useDigitButton(value));
+            button.addEventListener('click', () => this.enterInput(value));
         } else if (button.classList.contains("operand")) {
-            // console.log(`binding target: ${button.value} as an operand`);
-            button.addEventListener('click', () => this.useOperandButton(value));
+            button.addEventListener('click', () => this.enterInput(value));
         } else {
             console.error(`tried to bind button of unknown type: '${value}'`);
         }
@@ -194,7 +212,7 @@ class Calculator {
         for (let i = 0; i < controls.length; i++) {
             const button = controls[i];
             const value = button.value;
-
+            // bind custom string codes for UI buttons
             switch (value) {
                 case 'DELETE':
                     button.addEventListener('click', () => this.doBackspace());
@@ -206,84 +224,117 @@ class Calculator {
                     button.addEventListener('click', () => this.submit());
                     break;
                 case 'ANS':
+                    // button.addEventListener('click', () => this.inputLastAnswer());
                     button.addEventListener('click', () => this.inputLastAnswer());
                     break;
                 case 'ARROWLEFT':
-                    button.addEventListener('click', () => this.moveCursorLeft());
+                    button.addEventListener('click', () => this.moveCursor(-1));
                     break;
                 case 'ARROWRIGHT':
-                    button.addEventListener('click', () => this.moveCursorRight());
+                    button.addEventListener('click', () => this.moveCursor(1));
                     break;
                 default:
                     console.log(`UNMANAGED CONTROL VALUE ${value}`);
                     break;
             }
-
         }
     }
 
-
-
-    setCursorPosition(position) {
-        const range = document.createRange();
-        const selection = window.getSelection();
-
-        // Ensure the position is within bounds
-        position = Math.min(position, this.inputZone.textContent.length);
-        position = Math.max(position, 0);
-
-        // Set the range at the desired position
-        range.setStart(this.inputZone.firstChild || this.inputZone, position);
-        range.collapse(true);
-
-        // Remove any existing selections and set the new range
-        selection.removeAllRanges();
-        selection.addRange(range);
-
-        // Update the cursorPosition property
-        this.cursorPosition = position;
-    }
+    // ******************************************************************
+    // *** CURSOR **********************
 
     moveCursorToStart() {
-        this.cursorPosition = 0;
+        // this.inputArea.focus();
+        this.inputArea.setSelectionRange(0, 0);
         this.updateInputDisplay();
     }
     moveCursorToEnd() {
-        this.cursorPosition = this.inputString.length;
+        const endPos = this.inputArea.value.length;
+        // this.inputArea.focus();
+        this.inputArea.setSelectionRange(endPos, endPos);
         this.updateInputDisplay();
     }
 
-    moveCursorLeft() {
-        if (this.cursorPosition > 0) {
-            this.cursorPosition--;
-            this.updateInputDisplay();
-        } else {
-            this.setCursorPosition(this.cursorPosition); // refocus even if no action to ensure cursor remains
-        }
-    }
-    moveCursorRight() {
-        if (this.cursorPosition < this.inputString.length) {
-            this.cursorPosition++;
-            this.updateInputDisplay();
-        } else {
-            this.setCursorPosition(this.cursorPosition); // refocus even if no action to ensure cursor remains
-        }
-    }
-
-    updateCursorPositionFromDOM() {
-        const selection = window.getSelection();
-        if (selection.rangeCount > 0) {
-            const range = selection.getRangeAt(0);
-
-            // Ensure the selection is within inputArea
-            if (this.inputZone.contains(range.startContainer)) {
-                // Update cursorPosition
-                this.cursorPosition = range.startOffset;
+    moveCursor(steps) {
+        const currentPos = this.inputArea.selectionStart;
+        const newPos = currentPos + steps;
+        console.log(`moveCursor: moving '${steps}' steps`);
+        
+        if (steps > 0) {
+            if (this.inputArea.selectionStart < this.inputArea.value.length) {
+                this.inputArea.setSelectionRange(newPos, newPos);
+                this.updateInputDisplay();
             }
         }
+        else if (steps < 0) {
+            if (this.inputArea.selectionStart > 0) {
+                this.inputArea.setSelectionRange(newPos, newPos);
+                this.updateInputDisplay();
+            }            
+        } else {
+            // nothing
+        }
+        this.inputArea.focus();
+    }    
+    // ******************************************************************
+ 
+    // ******************************************************************
+    // ******** HISTORY *****************    
+    //
+    // append the history
+    addToHistory(inputString, answer) {
+        if (this.history.length < this.maxHistoryCount) {
+            this.history.push({ str: inputString, answer: answer });
+        } else {
+            // Overwrite oldest entry when full
+            this.history[this.historyIndex] = { str: inputString, answer: answer };
+        }
+        // Update current index to the next position (circular behavior)
+        this.historyIndex = (this.historyIndex + 1) % this.maxHistoryCount;
     }
+    //
+    // output the history
+    printHistory() {
+        // set a variable for the string
+        let historyString = "historyString: ";
+        let length = this.history.length;
 
+        // Start from the most recent and iterate backwards
+        for (let i = 0; i < length; i++) {
+            // Compute the current index manually
+            const index = (this.historyIndex - 1 - i + this.maxHistoryCount) % this.maxHistoryCount;
+            const hi = this.history[index];
+            historyString += `\n${hi.str} = ${hi.answer},`;
+        }
+        console.log(historyString);
+    }
+    // ******************************************************************
+    // ********** MISC ******************
+    //
+    // ** FOR TIDYING UP THE WASM/C **
+    // cleanup() {
+    //     if (this.Parser && this.parserPtr) {
+    //         // Destroy parser
+    //         this.Parser.ccall('destroy_parser', null, ['number'], [this.parserPtr]);
 
+    //         // Free allocated memory
+    //         this.Parser._free(this.inputPtr);
+    //         this.Parser._free(this.resultPtr);
+    //         this.Parser._free(this.errorPtr);
+
+    //         console.log("WASM Parser resources cleaned up");
+    //     }
+    // }
+    //
+    // ** FOR TESTER **
+    testInput(expression, answer) {
+        return {
+            expression: expression,
+            answer: answer,
+            result: this.parser.parse(expression)
+        }
+    }
+    // ******************************************************************
 
 }
 
