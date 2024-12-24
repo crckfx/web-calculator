@@ -48,7 +48,7 @@ class Calculator {
                 case 'Escape':
                     this.AllClear();
                     break;
-            }            
+            }
         });
         this.outputArea.addEventListener('click', () => {
             // console.log(`you want to use an old answer hey, possibly '${this.lastInput}'`);
@@ -57,7 +57,6 @@ class Calculator {
             this.inputArea.focus();
         });
 
-        this.updateInputDisplay();
     }
 
 
@@ -66,38 +65,11 @@ class Calculator {
         if (!this.allowedCharacters.test(value)) {
             this.inputArea.value = value.replace(/[^0-9+\-*/.()]/g, '');
         }
-    }    
+    }
 
-    // parseExpression(expr) {
-    //     if (!this.Parser || this.parserPtr === null) {
-    //         console.error("Parser not initialized yet!");
-    //         return NaN;
-    //     }
-    //     if (expr.length + 1 > this.MAX_INPUT_LEN) {
-    //         console.error("Input too large for the pre-allocated buffer!");
-    //         return NaN;
-    //     }
-    //     // Convert input to UTF-8 in WASM memory
-    //     this.Parser.stringToUTF8(expr, this.inputPtr, this.MAX_INPUT_LEN);
-    //     // Parse the expression
-    //     const success = this.parser_parse(this.parserPtr, this.inputPtr, this.resultPtr, this.errorPtr);
-    //     if (success) {
-    //         const result = this.Parser.getValue(this.resultPtr, 'double');
-    //         // console.log(`Result for "${expr}": ${result}`);
-    //         return result;
-    //     } else {
-    //         const errorMessage = this.Parser.UTF8ToString(this.errorPtr);
-    //         // console.error(`Error parsing "${expr}": ${errorMessage}`);
-    //         return NaN;
-    //     }
-    // }
-
+    // no need to write a "parseExpression()" here because we use "parser.parse()" instead
 
     // --- UI functions ---
-    updateInputDisplay() {
-        this.inputArea.focus();
-        // this.softSubmit();
-    }
 
     // misc function to do both/either string/char
     enterInput(input) {
@@ -117,8 +89,8 @@ class Calculator {
         // Move the cursor position forward
         this.inputArea.setSelectionRange(newPos, newPos);
 
-        // Update the display
-        this.updateInputDisplay();
+        // focus the display
+        this.inputArea.focus();
     }
 
     inputLastAnswer() {
@@ -135,11 +107,12 @@ class Calculator {
     AllClear() {
         this.clearInput();
         this.clearOutput();
-        this.updateInputDisplay();
+        // focus the display
+        this.inputArea.focus();
     }
 
     clearInput() {
-        this.inputArea.value = "";   
+        this.inputArea.value = "";
     }
 
     clearOutput() {
@@ -156,8 +129,8 @@ class Calculator {
                 this.inputArea.value.slice(pos);
             this.inputArea.value = newInput;
             this.inputArea.setSelectionRange(newPos, newPos);
-
-            this.updateInputDisplay();
+            // focus the display
+            this.inputArea.focus();
         }
     }
 
@@ -169,7 +142,7 @@ class Calculator {
             const answer = this.parser.parse(inputString);   // NOTE 2. THIS SHOULD USE THE DEFINED METHOD NOT A CLASS
             // this.outputArea.innerHTML = `${answer}`;
             this.outputArea.innerHTML = `${inputString} = ${answer}`;
-            
+
             if (!isNaN(answer)) {
                 this.inputArea.value = `${answer}`;
                 this.lastInput = inputString // save the input as last
@@ -178,7 +151,6 @@ class Calculator {
                 // this.outputArea.classList.remove('soft');       // make visuals 'real' (not 'soft')
                 this.moveCursorToEnd();
                 this.outputArea.focus();
-                
             }
         }
     }
@@ -244,40 +216,36 @@ class Calculator {
     // *** CURSOR **********************
 
     moveCursorToStart() {
-        // this.inputArea.focus();
         this.inputArea.setSelectionRange(0, 0);
-        this.updateInputDisplay();
+        this.inputArea.focus();     // focus the display
     }
     moveCursorToEnd() {
         const endPos = this.inputArea.value.length;
-        // this.inputArea.focus();
         this.inputArea.setSelectionRange(endPos, endPos);
-        this.updateInputDisplay();
+        this.inputArea.focus();     // focus the display
     }
 
     moveCursor(steps) {
         const currentPos = this.inputArea.selectionStart;
         const newPos = currentPos + steps;
         console.log(`moveCursor: moving '${steps}' steps`);
-        
+
         if (steps > 0) {
             if (this.inputArea.selectionStart < this.inputArea.value.length) {
                 this.inputArea.setSelectionRange(newPos, newPos);
-                this.updateInputDisplay();
             }
         }
         else if (steps < 0) {
             if (this.inputArea.selectionStart > 0) {
                 this.inputArea.setSelectionRange(newPos, newPos);
-                this.updateInputDisplay();
-            }            
+            }
         } else {
-            // nothing
+            return;
         }
         this.inputArea.focus();
-    }    
+    }
     // ******************************************************************
- 
+
     // ******************************************************************
     // ******** HISTORY *****************    
     //
@@ -310,21 +278,6 @@ class Calculator {
     }
     // ******************************************************************
     // ********** MISC ******************
-    //
-    // ** FOR TIDYING UP THE WASM/C **
-    // cleanup() {
-    //     if (this.Parser && this.parserPtr) {
-    //         // Destroy parser
-    //         this.Parser.ccall('destroy_parser', null, ['number'], [this.parserPtr]);
-
-    //         // Free allocated memory
-    //         this.Parser._free(this.inputPtr);
-    //         this.Parser._free(this.resultPtr);
-    //         this.Parser._free(this.errorPtr);
-
-    //         console.log("WASM Parser resources cleaned up");
-    //     }
-    // }
     //
     // ** FOR TESTER **
     testInput(expression, answer) {
